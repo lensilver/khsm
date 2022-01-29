@@ -14,7 +14,7 @@ RSpec.describe Game, type: :model do
   let(:game_w_questions) { FactoryBot.create(:game_with_questions, user: user) }
 
   # Группа тестов на работу фабрики создания новых игр
-  context 'Game Factory' do
+  describe 'Game Factory' do
     it 'Game.create_game! new correct game' do
       # генерим 60 вопросов с 4х запасом по полю level,
       # чтобы проверить работу RANDOM при создании игры
@@ -40,7 +40,8 @@ RSpec.describe Game, type: :model do
 
 
   # тесты на основную игровую логику
-  context 'game mechanics' do
+  
+  describe 'testing game mechanics' do
 
     # правильный ответ должен продолжать игру
     it 'answer correct continues game' do
@@ -59,6 +60,53 @@ RSpec.describe Game, type: :model do
       # игра продолжается
       expect(game_w_questions.status).to eq(:in_progress)
       expect(game_w_questions.finished?).to be_falsey
+    end
+  end
+
+  describe '#take_money' do
+    it 'take_money! finishes the game' do
+      # берем игру и отвечаем на текущий вопрос
+      q = game_w_questions.current_game_question
+      game_w_questions.answer_current_question!(q.correct_answer_key)
+
+      # взяли деньги
+      game_w_questions.take_money!
+
+      prize = game_w_questions.prize
+      expect(prize).to be > 0
+
+      # проверяем что закончилась игра и пришли деньги игроку
+      expect(game_w_questions.status).to eq :money
+      expect(game_w_questions.finished?).to be_truthy
+      expect(user.balance).to eq prize
+    end
+  end
+
+  describe '.status' do
+  # перед каждым тестом "завершаем игру"
+    before(:each) do
+      game_w_questions.finished_at = Time.now
+      expect(game_w_questions.finished?).to be_truthy
+    end
+
+    it ':won' do
+      game_w_questions.current_level = Question::QUESTION_LEVELS.max + 1
+      expect(game_w_questions.status).to eq(:won)
+    end
+
+    it ':fail' do
+      game_w_questions.is_failed = true
+      expect(game_w_questions.status).to eq(:fail)
+    end
+
+    it ':timeout' do
+      game_w_questions.created_at = 1.hour.ago
+      game_w_questions.is_failed = true
+      expect(game_w_questions.status).to eq(:timeout)
+    end
+
+    it ':money' do
+      expect(game_w_questions.status).to eq(:money)
     end
   end
 end

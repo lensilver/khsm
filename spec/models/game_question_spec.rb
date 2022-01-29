@@ -11,7 +11,7 @@ RSpec.describe GameQuestion, type: :model do
   let(:game_question) { FactoryBot.create(:game_question, a: 2, b: 1, c: 4, d: 3) }
 
   # группа тестов на игровое состояние объекта вопроса
-  context 'game status' do
+  describe 'testing game status' do
     # тест на правильную генерацию хэша с вариантами
     it 'correct .variants' do
       expect(game_question.variants).to eq({'a' => game_question.question.answer2,
@@ -34,7 +34,7 @@ RSpec.describe GameQuestion, type: :model do
   # }
   #
 
-  context 'user helpers' do
+  describe 'testing user helpers' do
     it 'correct audience_help' do
       expect(game_question.help_hash).not_to include(:audience_help)
 
@@ -45,5 +45,13 @@ RSpec.describe GameQuestion, type: :model do
       ah = game_question.help_hash[:audience_help]
       expect(ah.keys).to contain_exactly('a', 'b', 'c', 'd')
     end
+  end
+
+  # тест на наличие методов делегатов level и text
+  describe '.level & .text' do
+    it 'returns correct level & .text' do
+      expect(game_question.text).to eq(game_question.question.text)
+      expect(game_question.level).to eq(game_question.question.level)
+    end  
   end
 end
