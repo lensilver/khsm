@@ -7,6 +7,13 @@ require 'spec_helper'
 require 'rspec/rails'
 # Add additional requires below this line. Rails is not loaded until this point!
 
+# Прописываем связь при установке factory_bot как прописано в документации
+require 'factory_bot'
+
+# Раскомментируйте следующую строку из rails_helper.rb, 
+# чтобы все файлы внутри spec/support загружались автоматически с помощью rspec
+Dir[Rails.root.join('spec', 'support', '**', '*.rb')].sort.each { |f| require f }
+
 # специальные "матчеры" - методы, удобные для тестирования валидаций
 Shoulda::Matchers.configure do |config|
   config.integrate do |with| with.test_framework :rspec
