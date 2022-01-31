@@ -133,11 +133,21 @@ RSpec.describe Game, type: :model do
       it 'returns true if answer is right'do
         expect(game_w_questions.answer_current_question!('d')).to eq(true)
       end
+
+      it 'the game continues' do
+        expect(game_w_questions.finished?).to be(false)
+        expect(game_w_questions.status).to eq(:in_progress)
+      end
     end   
 
     context 'when answer is not correct' do
       it 'returns false if answer is wrong' do
         expect(game_w_questions.answer_current_question!('a')).to eq(false)
+      end
+
+      it 'the game continues' do
+        expect(game_w_questions.finished?).to be(false)
+        expect(game_w_questions.status).to eq(:in_progress)
       end
     end
 
@@ -147,11 +157,12 @@ RSpec.describe Game, type: :model do
         game_w_questions.answer_current_question!(game_w_questions.answer_current_question!( 'd' ))
       end
 
-      it 'game ends' do
+      it 'finishes the game' do
         expect(game_w_questions.finished?).to be(true)
+        expect(game_w_questions.status).not_to eq(:in_progress)
       end
 
-      it 'max prize' do
+      it 'wins the maximum prize' do
         expect(game_w_questions.prize).to eq(Game::PRIZES.last)
       end
     end
