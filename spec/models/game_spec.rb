@@ -112,13 +112,17 @@ RSpec.describe Game, type: :model do
 
   describe '#current_game_question' do
     it 'returns the current question' do
-      expect(game_w_questions.current_game_question).to be_a(GameQuestion)
+      expect(game_w_questions.current_game_question).to eq(game_w_questions.game_questions.first)
     end
   end
 
   describe '#previous_level' do
-    it 'returns the number of the previous level' do
-      expect(game_w_questions.previous_level).to eq -1
+    before do
+      game_w_questions.current_level = Question::QUESTION_LEVELS 3
+
+      it 'returns the number of the previous level' do
+        expect(game_w_questions.previous_level).to eq 2
+      end
     end
   end
 
@@ -129,8 +133,7 @@ RSpec.describe Game, type: :model do
       it 'returns true if answer is right'do
         expect(game_w_questions.answer_current_question!('d')).to eq(true)
       end
-    end
-   
+    end   
 
     context 'when answer is not correct' do
       it 'returns false if answer is wrong' do
@@ -140,8 +143,8 @@ RSpec.describe Game, type: :model do
 
     context 'when game is last' do
       before do
-          game_w_questions.current_level = Question::QUESTION_LEVELS.max
-          game_w_questions.answer_current_question!(game_w_questions.answer_current_question!( 'd' ))
+        game_w_questions.current_level = Question::QUESTION_LEVELS.max
+        game_w_questions.answer_current_question!(game_w_questions.answer_current_question!( 'd' ))
       end
 
       it 'game ends' do
@@ -149,9 +152,9 @@ RSpec.describe Game, type: :model do
       end
 
       it 'max prize' do
-          expect(game_w_questions.prize).to eq(Game::PRIZES.last)
+        expect(game_w_questions.prize).to eq(Game::PRIZES.last)
       end
-    end  
+    end
 
     context 'when time is out' do
       before { game_w_questions.created_at = 36.minutes.ago }
@@ -160,6 +163,6 @@ RSpec.describe Game, type: :model do
         expect(game_w_questions.answer_current_question!('d')).to eq(false)
         expect(game_w_questions.status).to eq(:timeout)
       end
-    end    
+    end
   end
 end
