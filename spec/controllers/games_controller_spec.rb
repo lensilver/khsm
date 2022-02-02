@@ -29,12 +29,12 @@ RSpec.describe GamesController, type: :controller do
       end
     end
     
-    context 'when user create a new game' do    
+    context 'when user create a new game' do
       it 'kick from #create' do
         # вызываем экшен
         post :create        
         expect(response.status).not_to eq(200) 
-        expect(response).to redirect_to(new_user_session_path) 
+        expect(response).to redirect_to(new_user_session_path)
         expect(flash[:alert]).to be 
       end
     end
@@ -134,7 +134,7 @@ RSpec.describe GamesController, type: :controller do
       expect(response.status).not_to eq(200) # статус не 200 ОК
       expect(response).to redirect_to(root_path)
       expect(flash[:alert]).to be # во flash должен быть прописана ошибка
-    end    
+    end
   end
 
   # юзер берет деньги
@@ -175,5 +175,20 @@ RSpec.describe GamesController, type: :controller do
       expect(response).to redirect_to(game_path(game_w_questions))
       expect(flash[:alert]).to be
     end
-  end  
+  end
+
+  describe '#ansver' do
+    context 'when user gives wrong answer' do
+      before { sign_in user }
+      it 'returns status of the game & right routes' do        
+        put :answer, id: game_w_questions.id, letter: 'a'
+        game = assigns(:game)
+
+        expect(game.finished?).to be(true)
+        expect(game.status).to eq(:fail)
+        expect(response).to redirect_to(user_path(user))
+        expect(flash[:alert]).to be
+      end
+    end
+  end
 end
