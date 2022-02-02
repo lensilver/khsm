@@ -1,5 +1,3 @@
-# (c) goodprogrammer.ru
-
 require 'rails_helper'
 require 'support/my_spec_helper' # наш собственный класс с вспомогательными методами
 
@@ -18,15 +16,45 @@ RSpec.describe GamesController, type: :controller do
   let(:game_w_questions) { FactoryBot.create(:game_with_questions, user: user) }
 
   # группа тестов для незалогиненного юзера (Анонимус)
-  context 'Anon' do
+  describe 'All games_controller actions for an unregistered user are tested'do
+    context 'when user is not signed in' do
     # из экшена show анона посылаем
-    it 'kick from #show' do
-      # вызываем экшен
-      get :show, id: game_w_questions.id
-      # проверяем ответ
-      expect(response.status).not_to eq(200) # статус не 200 ОК
-      expect(response).to redirect_to(new_user_session_path) # devise должен отправить на логин
-      expect(flash[:alert]).to be # во flash должен быть прописана ошибка
+      it 'kick from #show' do
+        # вызываем экшен
+        get :show, id: game_w_questions.id
+        # проверяем ответ
+        expect(response.status).not_to eq(200) # статус не 200 ОК
+        expect(response).to redirect_to(new_user_session_path) # devise должен отправить на логин
+        expect(flash[:alert]).to be # во flash должен быть прописана ошибка
+      end
+    end
+    
+    context 'when user create a new game' do    
+      it 'kick from #create' do
+        # вызываем экшен
+        post :create        
+        expect(response.status).not_to eq(200) 
+        expect(response).to redirect_to(new_user_session_path) 
+        expect(flash[:alert]).to be 
+      end
+    end
+
+    context 'when user take money' do
+      it 'kick from #take_money' do
+        put :take_money, id: game_w_questions.id
+        expect(response.status).not_to eq(200)
+        expect(response).to redirect_to(new_user_session_path)
+        expect(flash[:alert]).to be
+      end
+    end
+
+    context 'when the user answers a question ' do
+      it 'kick from #answer' do
+        put :answer, id: game_w_questions.id, letter: 'a'
+        expect(response.status).not_to eq(200)
+        expect(response).to redirect_to(new_user_session_path)
+        expect(flash[:alert]).to be
+      end
     end
   end
 
