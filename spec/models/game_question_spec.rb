@@ -61,7 +61,7 @@ RSpec.describe GameQuestion, type: :model do
     end  
   end
 
-  describe '#correct_answer_key' do
+  describe '.correct_answer_key' do
     it 'returns correct answer key' do
       expect(game_question.correct_answer_key).to eq('b')
     end
@@ -76,6 +76,61 @@ RSpec.describe GameQuestion, type: :model do
       game_question.help_hash[:audience_help] = 'true'
       expect(game_question.save).to be(true)
       expect(game_question.help_hash).to eq({audience_help: 'true'})
+    end
+  end
+
+  describe '#add_audience_help' do
+    it 'returns empty key before use' do
+      expect(game_question.help_hash).not_to include(:audience_help)
+    end
+
+    context 'when help of audience is used' do
+      before { game_question.add_audience_help }
+
+      it 'include added key after use' do
+        expect(game_question.help_hash).to include(:audience_help)
+      end
+
+      it 'includes valid answers key' do
+        ah = game_question.help_hash[:audience_help]
+        expect(ah.keys).to contain_exactly('a', 'b', 'c', 'd')
+      end
+    end
+  end
+
+  # проверяем работу 50/50
+  describe '.add_fifty_fifty' do
+    it 'correct fifty_fifty' do
+      # сначала убедимся, в подсказках пока нет нужного ключа
+      expect(game_question.help_hash).not_to include(:fifty_fifty)
+      # вызовем подсказку
+      game_question.add_fifty_fifty
+
+      # проверим создание подсказки
+      expect(game_question.help_hash).to include(:fifty_fifty)
+      ff = game_question.help_hash[:fifty_fifty]
+
+      expect(ff).to include('b') # должен остаться правильный вариант
+      expect(ff.size).to eq 2 # всего должно остаться 2 варианта
+    end
+  end
+
+  describe '.add_friend_call' do
+    it 'returns empty hash before start of the use' do
+      expect(game_question.help_hash).to eq({})
+    end
+
+    context 'when call a friend is used' do    
+      before {game_question.add_friend_call}
+      let(:fc) { game_question.help_hash[:friend_call] }
+
+      it 'include correct key after use' do
+        expect(game_question.help_hash).to include(:friend_call)
+      end
+
+      it 'correct value type' do
+        expect(fc.class).to be (String)
+      end
     end
   end
 end
