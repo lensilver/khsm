@@ -16,7 +16,7 @@ RSpec.describe GamesController, type: :controller do
   let(:game_w_questions) { FactoryBot.create(:game_with_questions, user: user) }
 
   # группа тестов для незалогиненного юзера (Анонимус)
-  describe 'All games_controller actions for an unregistered user are tested'do
+  describe '#show'do
     context 'when user is not signed in' do
       context 'when the user wants to watch the game' do
       # из экшена show анона посылаем
@@ -129,6 +129,7 @@ RSpec.describe GamesController, type: :controller do
   describe 'the user cannot play someone else`s game'do
     context 'when a user tries to open another user`s game' do
       before { sign_in user }
+      
       it '#show alien game' do
         # создаем новую игру, юзер не прописан, будет создан фабрикой новый
         alien_game = FactoryBot.create(:game_with_questions)
@@ -147,6 +148,7 @@ RSpec.describe GamesController, type: :controller do
   describe 'user takes money'do
     context 'when the user takes the money until the end of the game' do
       before { sign_in user }
+
       it 'takes money' do
         # вручную поднимем уровень вопроса до выигрыша 200
         game_w_questions.update_attribute(:current_level, 2)
@@ -170,6 +172,7 @@ RSpec.describe GamesController, type: :controller do
   describe 'user creates a new game'do
     context 'when the user cannot start a new game without finishing the previous one' do
       before { sign_in user }
+
       it 'try to create second game' do
         # убедились что есть игра в работе
         expect(game_w_questions.finished?).to be false
@@ -187,9 +190,10 @@ RSpec.describe GamesController, type: :controller do
     end
   end
 
-  describe '#ansver' do
+  describe '#answer' do
     context 'when user gives wrong answer' do
       before { sign_in user }
+
       it 'returns status of the game & right routes' do        
         put :answer, id: game_w_questions.id, letter: 'a'
         game = assigns(:game)

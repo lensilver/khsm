@@ -22,7 +22,7 @@ RSpec.describe GameQuestion, type: :model do
 
     it 'correct .answer_correct?' do
       # именно под буквой b в тесте мы спрятали указатель на верный ответ
-      expect(game_question.answer_correct?('b')).to be_truthy
+      expect(game_question.answer_correct?('b')).to be(true)
     end
   end
 
@@ -34,16 +34,22 @@ RSpec.describe GameQuestion, type: :model do
   # }
   #
 
-  describe 'testing user helpers' do
-    it 'correct audience_help' do
+  describe '#add_audience_help' do
+    it 'returns empty key before use' do
       expect(game_question.help_hash).not_to include(:audience_help)
+    end  
 
-      game_question.add_audience_help
+    context 'when help of audience is used' do
+      before {game_question.add_audience_help}
+      
+      it 'include added key after use' do
+        expect(game_question.help_hash).to include(:audience_help)
+      end
 
-      expect(game_question.help_hash).to include(:audience_help)
-
-      ah = game_question.help_hash[:audience_help]
-      expect(ah.keys).to contain_exactly('a', 'b', 'c', 'd')
+      it 'includes valid answers key'do
+        ah = game_question.help_hash[:audience_help]
+        expect(ah.keys).to contain_exactly('a', 'b', 'c', 'd')
+      end
     end
   end
 
@@ -58,6 +64,18 @@ RSpec.describe GameQuestion, type: :model do
   describe '#correct_answer_key' do
     it 'returns correct answer key' do
       expect(game_question.correct_answer_key).to eq('b')
+    end
+  end
+
+  describe '.help_hash'do
+    it 'returns empty hash at the start game' do
+      expect(game_question.help_hash).to eq({})
+    end
+
+    it 'fills the hash' do
+      game_question.help_hash[:audience_help] = 'true'
+      expect(game_question.save).to be(true)
+      expect(game_question.help_hash).to eq({audience_help: 'true'})
     end
   end
 end
