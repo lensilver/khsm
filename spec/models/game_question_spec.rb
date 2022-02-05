@@ -54,20 +54,20 @@ RSpec.describe GameQuestion, type: :model do
   end
 
   # тест на наличие методов делегатов level и text
-  describe '.level & .text' do
+  describe '#level & #text' do
     it 'returns correct level & .text' do
       expect(game_question.text).to eq(game_question.question.text)
       expect(game_question.level).to eq(game_question.question.level)
     end  
   end
 
-  describe '.correct_answer_key' do
+  describe '#correct_answer_key' do
     it 'returns correct answer key' do
       expect(game_question.correct_answer_key).to eq('b')
     end
   end
 
-  describe '.help_hash'do
+  describe '#help_hash'do
     it 'returns empty hash at the start game' do
       expect(game_question.help_hash).to eq({})
     end
@@ -116,21 +116,27 @@ RSpec.describe GameQuestion, type: :model do
   end
 
   describe '#add_friend_call' do
-    it 'returns empty key before use' do
-      expect(game_question.help_hash).not_to include(:friend_call)
+    context 'before using friend_call' do
+      it 'the hash has empty key before use' do
+        expect(game_question.help_hash).not_to include(:friend_call)
+      end
     end
 
     context 'when call a friend is used' do    
       before { game_question.add_friend_call }
       let(:fc) { game_question.help_hash[:friend_call] }
 
-      it 'include added key after use' do
+      it 'adds key after use' do
         expect(game_question.help_hash).to include(:friend_call)
       end
 
-      it 'displays correct text' do
+      it 'displays correct text in the hash of the hint' do
         expect(fc.class).to be (String)
         expect(fc).to include('считает, что это вариант')
+      end
+
+      it 'passes one of the keys' do
+        expect(fc).to match(/[ABCD]/)
       end
     end
   end
