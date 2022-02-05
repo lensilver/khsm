@@ -99,7 +99,7 @@ RSpec.describe GameQuestion, type: :model do
   end
 
   # проверяем работу 50/50
-  describe '.add_fifty_fifty' do
+  describe '#add_fifty_fifty' do
     it 'correct fifty_fifty' do
       # сначала убедимся, в подсказках пока нет нужного ключа
       expect(game_question.help_hash).not_to include(:fifty_fifty)
@@ -115,21 +115,22 @@ RSpec.describe GameQuestion, type: :model do
     end
   end
 
-  describe '.add_friend_call' do
-    it 'returns empty hash before start of the use' do
-      expect(game_question.help_hash).to eq({})
+  describe '#add_friend_call' do
+    it 'returns empty key before use' do
+      expect(game_question.help_hash).not_to include(:friend_call)
     end
 
     context 'when call a friend is used' do    
-      before {game_question.add_friend_call}
+      before { game_question.add_friend_call }
       let(:fc) { game_question.help_hash[:friend_call] }
 
-      it 'include correct key after use' do
+      it 'include added key after use' do
         expect(game_question.help_hash).to include(:friend_call)
       end
 
-      it 'correct value type' do
+      it 'displays correct text' do
         expect(fc.class).to be (String)
+        expect(fc).to include('считает, что это вариант')
       end
     end
   end
