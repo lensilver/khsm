@@ -82,7 +82,7 @@ RSpec.describe Game, type: :model do
     end
   end
 
-  describe '.status' do
+  describe '#status' do
   # перед каждым тестом "завершаем игру"
     before(:each) do
       game_w_questions.finished_at = Time.now
