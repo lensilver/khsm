@@ -1,10 +1,9 @@
 require 'rails_helper'
 
 RSpec.describe 'users/show', type: :view do
-
   context 'when authenticated user viewing others page' do
     before(:each) do
-      assign(:user, FactoryBot.build_stubbed(:user, name: 'Миша'))
+      assign(:user, build_stubbed(:user, name: 'Миша'))
       stub_template 'users/_game.html.erb' => 'User game goes here'
       render
     end
@@ -24,7 +23,7 @@ RSpec.describe 'users/show', type: :view do
   end
 
   context 'when authenticated user viewing his page' do
-    let(:user) { FactoryBot.create(:user, name: 'Вадик') }
+    let(:user) { create(:user, name: 'Вадик') }
     before do
       assign(:user, user)
       sign_in user
