@@ -17,7 +17,6 @@ RSpec.feature 'USER sees profile the other player', type: :feature do
 
     visit "/"
     click_link 'Jane Doe'
-    save_and_open_page
 
     expect(page).to have_content '07 февр., 13:00'
     expect(page).to have_content '07 февр., 14:00'
