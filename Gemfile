@@ -25,11 +25,13 @@ group :development, :test do
   gem 'rspec-rails', '~> 3.4'
   gem 'factory_bot_rails'
   gem 'shoulda-matchers'
+end  
 
-  # Гем, который использует rspec, чтобы смотреть наш сайт
+
+group :test do
   gem 'capybara'
-
-  # Гем, который позволяет смотреть, что видит capybara
+  # Этот гем позволяет сохранять и открывать скриншот страницы 
+  # с результатом активности юзера
   gem 'launchy'
 end
 
