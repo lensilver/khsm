@@ -17,135 +17,129 @@ RSpec.describe GamesController, type: :controller do
 
   # группа тестов для незалогиненного юзера (Анонимус)  
   describe '#show' do
-    context 'when user is not signed in' do
-      context 'when the user wants to watch the game' do
-        it 'kick from #show to sign in page' do            
-          get :show, id: game_w_questions.id
+    context 'when an unregistered user wants to watch the game' do
+      it 'kick from #show to sign in page' do            
+        get :show, id: game_w_questions.id
             
-          expect(response.status).not_to eq(200) # статус не 200 ОК
-          expect(response).to redirect_to(new_user_session_path) # devise должен отправить на логин
-          expect(flash[:alert]).to be # во flash должен быть прописана ошибка
-        end
+        expect(response.status).not_to eq(200) # статус не 200 ОК
+        expect(response).to redirect_to(new_user_session_path) # devise должен отправить на логин
+        expect(flash[:alert]).to be # во flash должен быть прописана ошибка
       end
     end
   end
         
   describe '#create' do
-    context 'when user is not signed in' do
-      context 'when user create a new game' do
-        it 'kick from #create to sign in page' do            
-          post :create
+    context 'when an unregistered user create a new game' do
+      it 'kick from #create to sign in page' do
+        post :create
 
-          expect(response.status).not_to eq(200) 
-          expect(response).to redirect_to(new_user_session_path)
-          expect(flash[:alert]).to be 
-        end
+        expect(response.status).not_to eq(200) 
+        expect(response).to redirect_to(new_user_session_path)
+        expect(flash[:alert]).to be 
       end
     end
   end
        
   describe '#take money' do
-    context 'when user is not signed in' do
-      context 'when user take money' do
-        it 'kick from #take_money to sign in page' do
-          put :take_money, id: game_w_questions.id
+    context 'when an unregistered user take money' do
+      it 'kick from #take_money to sign in page' do
+        put :take_money, id: game_w_questions.id
 
-          expect(response.status).not_to eq(200)
-          expect(response).to redirect_to(new_user_session_path)
-          expect(flash[:alert]).to be
-        end
+        expect(response.status).not_to eq(200)
+        expect(response).to redirect_to(new_user_session_path)
+        expect(flash[:alert]).to be
       end
-    end  
+    end
   end
 
   describe '#answer' do
-    context 'when user is not signed in' do
-      context 'when the user answers a question ' do
-        it 'kick from #answer to sign in page' do
-          put :answer, id: game_w_questions.id, letter: 'a'
+    context 'when an unregistered user answers a question ' do
+      it 'kick from #answer to sign in page' do
+        put :answer, id: game_w_questions.id, letter: 'a'
 
-          expect(response.status).not_to eq(200)
-          expect(response).to redirect_to(new_user_session_path)
-          expect(flash[:alert]).to be
-        end
+        expect(response.status).not_to eq(200)
+        expect(response).to redirect_to(new_user_session_path)
+        expect(flash[:alert]).to be
       end
     end
-  end   
+  end
   
-  # группа тестов на экшены контроллера, доступных залогиненным юзерам
-  describe 'All games_controller actions for an registered user are tested'do
-    context 'when the user is logged in' do
+  describe '#create'do
+    context 'when a registered user creates a new game' do
       # перед каждым тестом в группе
-      before(:each) { sign_in user } # логиним юзера user с помощью спец. Devise метода sign_in
+      before { sign_in user }
+      
+      it 'creates game' do
+        # сперва накидаем вопросов, из чего собирать новую игру
+        generate_questions(15)
 
-      # юзер может создать новую игру
-      context 'when the users creates a new game' do
-        it 'creates game' do
-          # сперва накидаем вопросов, из чего собирать новую игру
-          generate_questions(15)
+        post :create
+        game = assigns(:game) # вытаскиваем из контроллера поле @game
 
-          post :create
-          game = assigns(:game) # вытаскиваем из контроллера поле @game
-
-          # проверяем состояние этой игры
-          expect(game.finished?).to be false
-          expect(game.user).to eq(user)
-          # и редирект на страницу этой игры
-          expect(response).to redirect_to(game_path(game))
-          expect(flash[:notice]).to be
-        end
-      end      
-
-      context 'when the user sees his game' do
-        it 'displays game' do
-          get :show, id: game_w_questions.id
-          game = assigns(:game) # вытаскиваем из контроллера поле @game
-
-          expect(game.finished?).to be false
-          expect(game.user).to eq(user)
-          expect(response.status).to eq(200) # должен быть ответ HTTP 200
-          expect(response).to render_template('show') # и отрендерить шаблон show
-        end  
+        # проверяем состояние этой игры
+        expect(game.finished?).to be false
+        expect(game.user).to eq(user)
+        # и редирект на страницу этой игры
+        expect(response).to redirect_to(game_path(game))
+        expect(flash[:notice]).to be
       end
-
-      # юзер отвечает на игру корректно - игра продолжается
-      context 'where the user answers correctly and continues the game' do
-        it 'continues the game before answer' do
-          # передаем параметр params[:letter]
-          put :answer, id: game_w_questions.id, letter: game_w_questions.current_game_question.correct_answer_key
-          game = assigns(:game)
-
-          expect(game.finished?).to be false
-           expect(game.current_level).to be > 0
-          expect(response).to redirect_to(game_path(game))
-          expect(flash.empty?).to be true # удачный ответ не заполняет flash
-        end
-      end
-
-      # тест на отработку "помощи зала"
-      context 'where the user uses audience help' do
-        it 'returns empty key' do
-          # сперва проверяем что в подсказках текущего вопроса пусто
-          expect(game_w_questions.current_game_question.help_hash[:audience_help]).not_to be
-          expect(game_w_questions.audience_help_used).to be false
-        end  
-
-        it 'recorded a hint, the game continues' do  
-          put :help, id: game_w_questions.id, help_type: :audience_help
-          game = assigns(:game)
-
-          # проверяем, что игра не закончилась, что флажок установился, и подсказка записалась
-          expect(game.finished?).to be false
-          expect(game.audience_help_used).to be true
-          expect(game.current_game_question.help_hash[:audience_help]).to be
-          expect(game.current_game_question.help_hash[:audience_help].keys).to contain_exactly('a', 'b', 'c', 'd')
-          expect(response).to redirect_to(game_path(game))
-        end
-      end
-    end  
+    end
   end
 
-  # проверка, что пользовтеля посылают из чужой игры
+  describe '#show' do
+    context 'when a registered user sees his game' do
+      before { sign_in user }
+      it 'displays game' do
+        get :show, id: game_w_questions.id
+        game = assigns(:game) # вытаскиваем из контроллера поле @game
+
+        expect(game.finished?).to be false
+        expect(game.user).to eq(user)
+        expect(response.status).to eq(200) # должен быть ответ HTTP 200
+        expect(response).to render_template('show') # и отрендерить шаблон show
+      end
+    end
+  end
+
+  describe '#answer' do
+    context 'when a registered user answers correctly and continues the game' do
+      before { sign_in user }
+      it 'continues the game before answer' do
+        # передаем параметр params[:letter]
+        put :answer, id: game_w_questions.id, letter: game_w_questions.current_game_question.correct_answer_key
+        game = assigns(:game)
+
+        expect(game.finished?).to be false
+        expect(game.current_level).to be > 0
+        expect(response).to redirect_to(game_path(game))
+        expect(flash.empty?).to be true # удачный ответ не заполняет flash
+      end
+    end
+  end
+
+  describe '#help' do
+    context 'when the user uses audience help' do
+      before { sign_in user }
+      it 'returns empty key' do
+        # сперва проверяем что в подсказках текущего вопроса пусто
+        expect(game_w_questions.current_game_question.help_hash[:audience_help]).not_to be
+        expect(game_w_questions.audience_help_used).to be false
+      end  
+
+      it 'recorded a hint, the game continues' do        
+        put :help, id: game_w_questions.id, help_type: :audience_help
+        game = assigns(:game)
+
+        # проверяем, что игра не закончилась, что флажок установился, и подсказка записалась
+        expect(game.finished?).to be false
+        expect(game.audience_help_used).to be true
+        expect(game.current_game_question.help_hash[:audience_help]).to be
+        expect(game.current_game_question.help_hash[:audience_help].keys).to contain_exactly('a', 'b', 'c', 'd')
+        expect(response).to redirect_to(game_path(game))
+      end
+    end
+  end
+
   describe '#create'do
     context 'when a user tries to open another user`s game' do
       before { sign_in user }
@@ -160,15 +154,15 @@ RSpec.describe GamesController, type: :controller do
         expect(response.status).not_to eq(200) # статус не 200 ОК
         expect(response).to redirect_to(root_path)
         expect(flash[:alert]).to be # во flash должен быть прописана ошибка
-      end  
+      end
     end
+  end
 
-    # юзер пытается создать новую игру, не закончив старую
+  describe '#create' do
     context 'when the user cannot start a new game without finishing the previous one' do
       before { sign_in user }
 
       it 'try to create second game' do
-        # убедились что есть игра в работе
         expect(game_w_questions.finished?).to be false
 
         # отправляем запрос на создание, убеждаемся что новых Game не создалось
@@ -180,11 +174,10 @@ RSpec.describe GamesController, type: :controller do
         # и редирект на страницу старой игры
         expect(response).to redirect_to(game_path(game_w_questions))
         expect(flash[:alert]).to be
-      end  
+      end
     end
   end
 
-  # юзер берет деньги
   describe '#take_money'do
     context 'when the user takes the money until the end of the game' do
       before { sign_in user }
@@ -204,7 +197,7 @@ RSpec.describe GamesController, type: :controller do
 
         expect(response).to redirect_to(user_path(user))
         expect(flash[:warning]).to be
-      end  
+      end
     end
   end
 
@@ -212,7 +205,7 @@ RSpec.describe GamesController, type: :controller do
     context 'when user gives wrong answer' do
       before { sign_in user }
 
-      it 'returns status of the game & right routes' do        
+      it 'returns status of the game & right routes' do
         put :answer, id: game_w_questions.id, letter: 'a'
         game = assigns(:game)
 
