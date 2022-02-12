@@ -14,7 +14,6 @@ RSpec.feature 'USER sees profile the other player', type: :feature do
   end
 
   scenario 'a registered user is viewing another user`s page' do
-
     visit "/"
     click_link 'Jane Doe'    
     
