@@ -178,7 +178,7 @@ RSpec.describe GamesController, type: :controller do
 
   describe '#show' do
     context 'when an unregistered user wants to watch the game' do
-      it 'kick from #show to sign in page' do            
+      it 'kick from #show to sign in page' do  
         get :show, id: game_w_questions.id
             
         expect(response.status).not_to eq(200) # статус не 200 ОК
@@ -189,7 +189,7 @@ RSpec.describe GamesController, type: :controller do
 
     context 'when a registered user sees his game' do
       before { sign_in user }
-      
+
       it 'displays game' do
         get :show, id: game_w_questions.id
         game = assigns(:game) # вытаскиваем из контроллера поле @game
