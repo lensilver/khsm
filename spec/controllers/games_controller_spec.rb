@@ -26,34 +26,34 @@ RSpec.describe GamesController, type: :controller do
       end
     end
 
-    context 'when a registered user gives wrong answer' do
+    context 'when a registered user answers' do
       before { sign_in user }
 
-      it 'returns status of the game & right routes' do
-        put :answer, id: game_w_questions.id, letter: 'a'
-        game = assigns(:game)
+      context 'when a registered user gives wrong answer' do
+        it 'returns status of the game & right routes' do
+          put :answer, id: game_w_questions.id, letter: 'a'
+          game = assigns(:game)
 
-        expect(game.finished?).to be true
-        expect(game.status).to eq(:fail)
-        expect(response).to redirect_to(user_path(user))
-        expect(flash[:alert]).to be
+          expect(game.finished?).to be true
+          expect(game.status).to eq(:fail)
+          expect(response).to redirect_to(user_path(user))
+          expect(flash[:alert]).to be
+        end
       end
-    end
 
-    context 'when a registered user answers correctly and continues the game' do
-      before { sign_in user }
-      
-      it 'continues the game before answer' do
-        # передаем параметр params[:letter]
-        put :answer, id: game_w_questions.id, letter: game_w_questions.current_game_question.correct_answer_key
-        game = assigns(:game)
+      context 'when a registered user answers correctly and continues the game' do
+        it 'continues the game before answer' do
+          # передаем параметр params[:letter]
+          put :answer, id: game_w_questions.id, letter: game_w_questions.current_game_question.correct_answer_key
+          game = assigns(:game)
 
-        expect(game.finished?).to be false
-        expect(game.current_level).to be > 0
-        expect(response).to redirect_to(game_path(game))
-        expect(flash.empty?).to be true # удачный ответ не заполняет flash
+          expect(game.finished?).to be false
+          expect(game.current_level).to be > 0
+          expect(response).to redirect_to(game_path(game))
+          expect(flash.empty?).to be true # удачный ответ не заполняет flash
+        end
       end
-    end
+    end  
   end
 
   describe '#create'do
@@ -67,56 +67,54 @@ RSpec.describe GamesController, type: :controller do
       end
     end
 
-    context 'when a user tries to open another user`s game' do
+    context 'when a registered user creates and opens the game' do
       before { sign_in user }
-            
-      it '#show alien game' do
-        # создаем новую игру, юзер не прописан, будет создан фабрикой новый
-        alien_game = create(:game_with_questions)
 
-        # пробуем зайти на эту игру текущий залогиненным user
-        get :show, id: alien_game.id
+      context 'when a user tries to open another user`s game' do
+        it '#show alien game' do
+          # создаем новую игру, юзер не прописан, будет создан фабрикой новый
+          alien_game = create(:game_with_questions)
 
-        expect(response.status).not_to eq(200) # статус не 200 ОК
-        expect(response).to redirect_to(root_path)
-        expect(flash[:alert]).to be # во flash должен быть прописана ошибка
+          # пробуем зайти на эту игру текущий залогиненным user
+          get :show, id: alien_game.id
+
+          expect(response.status).not_to eq(200) # статус не 200 ОК
+          expect(response).to redirect_to(root_path)
+          expect(flash[:alert]).to be # во flash должен быть прописана ошибка
+        end
       end
-    end
 
-    context 'when the user cannot start a new game without finishing the previous one' do
-      before { sign_in user }
-      
-      it 'try to create second game' do
-        expect(game_w_questions.finished?).to be false
+      context 'when the user cannot start a new game without finishing the previous one' do
+        it 'try to create second game' do
+          expect(game_w_questions.finished?).to be false
 
-        # отправляем запрос на создание, убеждаемся что новых Game не создалось
-        expect { post :create }.to change(Game, :count).by(0)
+          # отправляем запрос на создание, убеждаемся что новых Game не создалось
+          expect { post :create }.to change(Game, :count).by(0)
 
-        game = assigns(:game) # вытаскиваем из контроллера поле @game
-        expect(game).to be_nil
+          game = assigns(:game) # вытаскиваем из контроллера поле @game
+          expect(game).to be_nil
 
-        # и редирект на страницу старой игры
-        expect(response).to redirect_to(game_path(game_w_questions))
-        expect(flash[:alert]).to be
+          # и редирект на страницу старой игры
+          expect(response).to redirect_to(game_path(game_w_questions))
+          expect(flash[:alert]).to be
+        end
       end
-    end
 
-    context 'when a registered user creates a new game' do
-      before { sign_in user }
-      
-      it 'creates game' do
-        # сперва накидаем вопросов, из чего собирать новую игру
-        generate_questions(15)
+      context 'when a registered user creates a new game' do
+        it 'creates game' do
+          # сперва накидаем вопросов, из чего собирать новую игру
+          generate_questions(15)
 
-        post :create
-        game = assigns(:game) # вытаскиваем из контроллера поле @game
+          post :create
+          game = assigns(:game) # вытаскиваем из контроллера поле @game
 
-        # проверяем состояние этой игры
-        expect(game.finished?).to be false
-        expect(game.user).to eq(user)
-        # и редирект на страницу этой игры
-        expect(response).to redirect_to(game_path(game))
-        expect(flash[:notice]).to be
+          # проверяем состояние этой игры
+          expect(game.finished?).to be false
+          expect(game.user).to eq(user)
+          # и редирект на страницу этой игры
+          expect(response).to redirect_to(game_path(game))
+          expect(flash[:notice]).to be
+        end
       end
     end
   end
@@ -191,6 +189,7 @@ RSpec.describe GamesController, type: :controller do
 
     context 'when a registered user sees his game' do
       before { sign_in user }
+      
       it 'displays game' do
         get :show, id: game_w_questions.id
         game = assigns(:game) # вытаскиваем из контроллера поле @game
