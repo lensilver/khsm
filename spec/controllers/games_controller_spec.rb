@@ -29,7 +29,7 @@ RSpec.describe GamesController, type: :controller do
     context 'when a registered user answers' do
       before { sign_in user }
 
-      context 'when a registered user gives wrong answer' do
+      context 'and gives wrong answer' do
         it 'returns status of the game & right routes' do
           put :answer, id: game_w_questions.id, letter: 'a'
           game = assigns(:game)
@@ -41,7 +41,7 @@ RSpec.describe GamesController, type: :controller do
         end
       end
 
-      context 'when a registered user answers correctly and continues the game' do
+      context 'and answers correctly and continues the game' do
         it 'continues the game before answer' do
           # передаем параметр params[:letter]
           put :answer, id: game_w_questions.id, letter: game_w_questions.current_game_question.correct_answer_key
@@ -70,7 +70,7 @@ RSpec.describe GamesController, type: :controller do
     context 'when a registered user creates and opens the game' do
       before { sign_in user }
 
-      context 'when a user tries to open another user`s game' do
+      context 'and tries to open another user`s game' do
         it '#show alien game' do
           # создаем новую игру, юзер не прописан, будет создан фабрикой новый
           alien_game = create(:game_with_questions)
@@ -84,7 +84,7 @@ RSpec.describe GamesController, type: :controller do
         end
       end
 
-      context 'when the user cannot start a new game without finishing the previous one' do
+      context 'and cannot start a new game without finishing the previous one' do
         it 'try to create second game' do
           expect(game_w_questions.finished?).to be false
 
@@ -100,7 +100,7 @@ RSpec.describe GamesController, type: :controller do
         end
       end
 
-      context 'when a registered user creates a new game' do
+      context 'and creates a new game' do
         it 'creates game' do
           # сперва накидаем вопросов, из чего собирать новую игру
           generate_questions(15)
@@ -154,7 +154,7 @@ RSpec.describe GamesController, type: :controller do
       end
     end
 
-    context 'when the user takes the money until the end of the game' do
+    context 'when a registered user takes the money until the end of the game' do
       before { sign_in user }
 
       it 'takes money' do
