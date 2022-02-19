@@ -201,4 +201,11 @@ RSpec.describe GamesController, type: :controller do
       end
     end
   end
+
+  context 'when the user can use the hint fifty-fifty ' do
+    it 'uses fifty fifty help' do 
+      expect(game_w_questions.current_game_question.help_hash[:fifty_fifty]).not_to be
+      expect(game_w_questions.fifty_fifty_used).to be false
+    end
+  end   
 end
