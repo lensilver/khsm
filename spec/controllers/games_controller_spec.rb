@@ -143,10 +143,20 @@ RSpec.describe GamesController, type: :controller do
         end
       end
 
-      context 'and the user can use the hint 50/50' do      
+      context 'and the user can use the hint 50/50' do
         it 'shows that the hint 50/50 was not used' do 
           expect(game_w_questions.current_game_question.help_hash[:fifty_fifty]).not_to be
           expect(game_w_questions.fifty_fifty_used).to be false
+
+          put :help, id: game_w_questions.id, help_type: :fifty_fifty
+          game = assigns(:game)
+
+          expect(game.finished?).to be false
+          expect(game.fifty_fifty_used).to be true
+          expect(game.current_game_question.help_hash[:fifty_fifty]).to be 
+          expect(game.current_game_question.help_hash[:fifty_fifty]).to include 'd'
+          expect(game.current_game_question.help_hash[:fifty_fifty].size).to eq 2
+          expect(response).to redirect_to(game_path(game))
         end
       end
     end

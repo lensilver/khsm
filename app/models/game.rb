@@ -122,18 +122,6 @@ class Game < ActiveRecord::Base
     finish_game!((previous_level > -1) ? PRIZES[previous_level] : 0, false)
   end
 
-
-  # todo: дорогой ученик!
-  # Код метода ниже можно сократиь в 3 раза с помощью возможностей Ruby и Rails,
-  # подумайте как и реализуйте. Помните о безопасности и входных данных!
-  #
-  # Вариант решения вы найдете в комментарии в конце файла, отвечающего за настройки
-  # хранения сессий вашего приложения. Вот такой вот вам ребус :)
-
-  # Создает варианты подсказок для текущего игрового вопроса.
-  # Возвращает true, если подсказка применилась успешно,
-  # false если подсказка уже заюзана.
-  #
   # help_type = :fifty_fifty | :audience_help | :friend_call
   def use_help(help_type)
     case help_type
@@ -171,11 +159,7 @@ class Game < ActiveRecord::Base
   def status
     return :in_progress unless finished?
 
-    if is_failed
-      # todo: дорогой ученик!
-      # Если TIME_LIMIT в будущем изменится, статусы старых, уже сыгранных игр
-      # могут измениться. Подумайте как это пофиксить!
-      # Ответ найдете в файле настроек вашего тестового окружения
+    if is_failed      
       if (finished_at - created_at) <= TIME_LIMIT
         :fail
       else
