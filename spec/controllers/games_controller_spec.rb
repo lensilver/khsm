@@ -120,25 +120,34 @@ RSpec.describe GamesController, type: :controller do
   end
 
   describe '#help' do
-    context 'when the user uses audience help' do
+    context 'when the user uses help' do
       before { sign_in user }
 
-      it 'returns empty key' do
-        # сперва проверяем что в подсказках текущего вопроса пусто
-        expect(game_w_questions.current_game_question.help_hash[:audience_help]).not_to be
-        expect(game_w_questions.audience_help_used).to be false
+      context 'and the user uses audience help' do
+        it 'returns empty key' do
+          # сперва проверяем что в подсказках текущего вопроса пусто
+          expect(game_w_questions.current_game_question.help_hash[:audience_help]).not_to be
+          expect(game_w_questions.audience_help_used).to be false
+        end
+
+        it 'recorded a hint, the game continues' do        
+          put :help, id: game_w_questions.id, help_type: :audience_help
+          game = assigns(:game)
+
+          # проверяем, что игра не закончилась, что флажок установился, и подсказка записалась
+          expect(game.finished?).to be false
+          expect(game.audience_help_used).to be true
+          expect(game.current_game_question.help_hash[:audience_help]).to be
+          expect(game.current_game_question.help_hash[:audience_help].keys).to contain_exactly('a', 'b', 'c', 'd')
+          expect(response).to redirect_to(game_path(game))
+        end
       end
 
-      it 'recorded a hint, the game continues' do        
-        put :help, id: game_w_questions.id, help_type: :audience_help
-        game = assigns(:game)
-
-        # проверяем, что игра не закончилась, что флажок установился, и подсказка записалась
-        expect(game.finished?).to be false
-        expect(game.audience_help_used).to be true
-        expect(game.current_game_question.help_hash[:audience_help]).to be
-        expect(game.current_game_question.help_hash[:audience_help].keys).to contain_exactly('a', 'b', 'c', 'd')
-        expect(response).to redirect_to(game_path(game))
+      context 'and the user can use the hint 50/50' do      
+        it 'shows that the hint 50/50 was not used' do 
+          expect(game_w_questions.current_game_question.help_hash[:fifty_fifty]).not_to be
+          expect(game_w_questions.fifty_fifty_used).to be false
+        end
       end
     end
   end
@@ -201,15 +210,4 @@ RSpec.describe GamesController, type: :controller do
       end
     end
   end
-
-  describe '#help' do 
-    context 'when the user can use the hint 50/50' do
-      before { sign_in user }
-      
-      it 'shows that the hint 50/50 was not used' do 
-        expect(game_w_questions.current_game_question.help_hash[:fifty_fifty]).not_to be
-        expect(game_w_questions.fifty_fifty_used).to be false
-      end
-    end
-  end   
 end
