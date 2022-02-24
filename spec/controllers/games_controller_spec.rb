@@ -130,7 +130,7 @@ RSpec.describe GamesController, type: :controller do
           expect(game_w_questions.audience_help_used).to be false
         end
 
-        it 'recorded a hint, the game continues' do        
+        it 'recorded a hint, the game continues' do
           put :help, id: game_w_questions.id, help_type: :audience_help
           game = assigns(:game)
 
@@ -144,19 +144,35 @@ RSpec.describe GamesController, type: :controller do
       end
 
       context 'and the user can use the hint 50/50' do
-        it 'shows that the hint 50/50 was not used' do 
+        it 'shows that the hint 50/50 was not used' do
           expect(game_w_questions.current_game_question.help_hash[:fifty_fifty]).not_to be
           expect(game_w_questions.fifty_fifty_used).to be false
+        end
+        
+        context 'when 50/50 help is used' do
+          before { put :help, id: game_w_questions.id, help_type: :fifty_fifty }
+          let(:game) { assigns(:game) }
 
-          put :help, id: game_w_questions.id, help_type: :fifty_fifty
-          game = assigns(:game)
+          it 'continues game' do
+            expect(game.finished?).to be false
+          end
+          
+          it 'includes added key after use' do
+            expect(game.fifty_fifty_used).to be true
+            expect(game.current_game_question.help_hash[:fifty_fifty]).to be
+          end
 
-          expect(game.finished?).to be false
-          expect(game.fifty_fifty_used).to be true
-          expect(game.current_game_question.help_hash[:fifty_fifty]).to be 
-          expect(game.current_game_question.help_hash[:fifty_fifty]).to include 'd'
-          expect(game.current_game_question.help_hash[:fifty_fifty].size).to eq 2
-          expect(response).to redirect_to(game_path(game))
+          it 'returns correct answer key' do
+            expect(game.current_game_question.help_hash[:fifty_fifty]).to include(game.current_game_question.correct_answer_key)
+          end
+          
+          it 'returns two variants' do
+            expect(game.current_game_question.help_hash[:fifty_fifty].size).to eq 2
+          end
+
+          it 'redirects to game_path' do
+            expect(response).to redirect_to(game_path(game))
+          end
         end
       end
     end
